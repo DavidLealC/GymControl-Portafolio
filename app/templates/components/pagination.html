@@ -1,0 +1,47 @@
+{% if total_pages > 1 %}
+<nav aria-label="Paginación">
+    <ul class="pagination justify-content-center mt-3">
+
+        <!-- PRIMERA -->
+        <li class="page-item {% if page == 1 %}disabled{% endif %}">
+            <a class="page-link"
+               href="?page=1&search={{ search }}">«</a>
+        </li>
+
+        <!-- ANTERIOR -->
+        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+            <a class="page-link"
+               href="?page={{ page - 1 }}&search={{ search }}">‹</a>
+        </li>
+
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+                <li class="page-item active">
+                    <span class="page-link">{{ p }}</span>
+                </li>
+
+            {% elif p >= page - 2 and p <= page + 2 %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ p }}&search={{ search }}">
+                        {{ p }}
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        <!-- SIGUIENTE -->
+        <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+            <a class="page-link"
+               href="?page={{ page + 1 }}&search={{ search }}">›</a>
+        </li>
+
+        <!-- ÚLTIMA -->
+        <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+            <a class="page-link"
+               href="?page={{ total_pages }}&search={{ search }}">»</a>
+        </li>
+
+    </ul>
+</nav>
+{% endif %}

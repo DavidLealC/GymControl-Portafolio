@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Coaches</h3>
+    <a href="/coaches/nuevo" class="btn btn-primary">
+        + Nuevo coach
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        
+
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Teléfono</th>
+                    <th>Clases</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for c in coaches %}
+                <tr>
+                    <td>{{ c.nombre }}</td>
+                    <td>
+                        {% if c.telefono %}
+                            {{ c.telefono }}
+                        {% else %}
+                            <span class="text-muted">Sin registro</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ c.total_clases }}
+                    </td>
+                    <td>
+                        {% if c.activo %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="/coaches/{{ c.id_coach }}"
+                           class="btn btn-sm btn-outline-dark">
+                            Detalle
+                        </a>
+
+                        <form action="/coaches/{{ c.id_coach }}/eliminar"
+                            method="post"
+                            class="d-inline"
+                            onsubmit="return confirm('¿Seguro que deseas eliminar este coach? Esta acción no se puede deshacer.');">
+    <input type="hidden" name="_csrf_token" value="{{ request.session.get('_csrf_token', '') }}">
+                            <button class="btn btn-sm btn-outline-danger">
+                                Eliminar
+                            </button>
+                        </form>
+
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% if not coaches %}
+            <div class="text-center text-muted py-4">
+                No hay coaches registrados.
+            </div>
+        {% endif %}
+
+        {% include "components/pagination.html" %}
+
+    </div>
+</div>
+{% endblock %}

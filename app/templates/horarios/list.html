@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3 class="mb-4">Horario del Gym</h3>
+
+<div class="table-responsive">
+<table class="table table-bordered text-center align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Hora</th>
+            {% for dia in dias_semana %}
+                <th>{{ dia }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+
+    <tbody>
+	{% for bloque in bloques %}
+	<tr>
+
+	<td class="fw-bold">
+	    {{ "%02d:%02d"|format(bloque//60, bloque%60) }}
+	</td>
+
+	{% for dia in dias_semana %}
+
+	{% set celda = tabla[dia][bloque] %}
+
+	{% if celda == "skip" %}
+
+	    {# NO imprimir nada #}
+
+	{% elif celda %}
+
+	<td rowspan="{{ celda.rowspan }}"
+	    class="bg-light align-middle">
+	    <strong>{{ celda.nombre }}</strong><br>
+	    {{ celda.inicio }} - {{ celda.fin }}
+	</td>
+
+	{% else %}
+
+	<td>&nbsp;</td>
+
+	{% endif %}
+
+	{% endfor %}
+
+	</tr>
+	{% endfor %}
+	</tbody>
+</table>
+</div>
+
+{% endblock %}

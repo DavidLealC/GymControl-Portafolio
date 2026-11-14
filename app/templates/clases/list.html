@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Clases</h3>
+    <a href="/clases/nuevo" class="btn btn-primary">
+        + Nueva clase
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Horarios</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for c in clases %}
+                <tr>
+                    <td>{{ c.nombre }}</td>
+                    <td>{{ c.total_horarios }}</td>
+                    <td>
+                        {% if c.activo %}
+                            <span class="badge bg-success">Activa</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactiva</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="/clases/{{ c.id_clase }}"
+                           class="btn btn-sm btn-outline-dark">
+                            Detalle
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% include "components/pagination.html" %}
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h3 class="mb-1">Detalle del cliente</h3>
+        <p class="text-white-50 mb-0">Información del cliente, membresías y pagos</p>
+    </div>
+    <div class="page-actions">
+        <a href="/clientes/" class="btn btn-sm btn-outline-light">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i> Volver a clientes
+        </a>
+
+        {% if cliente.prioridad_manual %}
+        <form method="post" action="/clientes/{{ cliente.id_cliente }}/quitar-final" class="m-0">
+            <input type="hidden" name="_csrf_token" value="{{ request.session.get('_csrf_token', '') }}">
+            <button type="submit" class="btn btn-sm btn-outline-warning">
+                Restaurar prioridad
+            </button>
+        </form>
+        {% else %}
+        <form method="post" action="/clientes/{{ cliente.id_cliente }}/mandar-final" class="m-0">
+            <input type="hidden" name="_csrf_token" value="{{ request.session.get('_csrf_token', '') }}">
+            <button type="submit" class="btn btn-sm btn-outline-warning">
+                Enviar al final
+            </button>
+        </form>
+        {% endif %}
+
+        <a href="/clientes/{{ cliente.id_cliente }}/editar" class="btn btn-sm btn-primary">
+            <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar cliente
+        </a>
+    </div>
+</div>
+
+<!-- DATOS PERSONALES -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">
+        Datos personales
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-bordered mb-0">
+            <tbody>
+                <tr>
+                    <th class="table-light" style="width: 30%">Nombre completo</th>
+                    <td>{{ cliente.nombre_completo }}</td>
+                </tr>
+                <tr>
+                    <th class="table-light">Teléfono</th>
+                    <td>{{ cliente.telefono or "—" }}</td>
+                </tr>
+                <tr>
+                    <th class="table-light">Teléfono de emergencia</th>
+                    <td>{{ cliente.telefono_emergencia or "—" }}</td>
+                </tr>
+                <tr>
+                    <th class="table-light">Nota médica</th>
+                    <td>
+                        {% if cliente.nota_medica %}
+                            {{ cliente.nota_medica }}
+                        {% else %}
+                            <span class="text-muted">Sin registro</span>
+                        {% endif %}
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- PAGO / SERVICIO -->
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span>Información de pago</span>
+
+        <a href="/clientes/{{ cliente.id_cliente }}/pago"
+           class="btn btn-sm btn-primary">
+            Registrar pago
+        </a>
+    </div>
+
+    <div class="card-body p-0">
+
+        {% if pago_actual %}
+	<table class="table table-bordered mb-0">
+	<tbody>
+
+	{% if pago_actual.tipo_concepto == 'servicio' %}
+	<tr>
+	    <th class="table-light" style="width:30%">
+	        Membresía Gym
+	    </th>
+	    <td>
+	        {{ pago_actual.servicio }}
+	        <span class="badge bg-info ms-2">
+	            Servicio
+	        </span>
+	    </td>
+	</tr>
+
+	<tr>
+	    <th class="table-light">Vence</th>
+	    <td>{{ pago_actual.fecha_corte.strftime('%d/%m/%Y') }}</td>
+	</tr>
+
+	<tr>
+	    <th class="table-light">
+	        Tipo de pago
+	    </th>
+	    <td class="text-capitalize">
+	        {{ pago_actual.tipo_pago }}
+	    </td>
+	</tr>
+	{% else %}
+    <tr>
+        <th class="table-light" style="width:30%">Último paquete de clase</th>
+        <td>
+            {{ pago_actual.clase or "Clase" }}
+            {% if pago_actual.tipo_pago == 'visitas' and pago_actual.visitas_totales %}
+            <span class="badge bg-info ms-2">{{ pago_actual.visitas_totales }} {{ 'visita' if pago_actual.visitas_totales == 1 else 'visitas' }} contratadas</span>
+            {% endif %}
+        </td>
+    </tr>
+	{% endif %}
+
+
+	{% if clases_visitas.visitas_restantes > 0 %}
+	<tr>
+	    <th class="table-light">
+	        Clases por visitas
+	    </th>
+
+	    <td>
+
+	        <span class="badge bg-primary">
+	            {{ clases_visitas.visitas_restantes }} {{ 'visita restante' if clases_visitas.visitas_restantes == 1 else 'visitas restantes' }}
+	        </span>
+
+	        <form method="post"
+	              action="/clientes/{{ cliente.id_cliente }}/usar-visita"
+	              style="display:inline;">
+    <input type="hidden" name="_csrf_token" value="{{ request.session.get('_csrf_token', '') }}">
+
+	            <button
+	             class="btn btn-sm btn-warning ms-3"
+	             onclick="return confirm('¿Descontar una visita de este cliente?')">
+
+	             Usar 1 visita
+
+	            </button>
+
+	        </form>
+
+	    </td>
+	</tr>
+	{% endif %}
+
+
+	<tr>
+	    <th class="table-light">
+	        Último pago registrado
+	    </th>
+	    <td>{{ pago_actual.fecha_pago.strftime('%d/%m/%Y') }}</td>
+	</tr>
+
+	<tr>
+	    <th class="table-light">
+	        Monto último pago
+	    </th>
+	    <td>${{ '%.2f'|format(pago_actual.monto_final) }}</td>
+	</tr>
+
+	</tbody>
+	</table>
+	{% else %}
+        <div class="p-3 text-muted">Este cliente todavía no tiene pagos registrados.</div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

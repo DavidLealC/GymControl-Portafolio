@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="mb-4">
+    <h3 class="mb-1">Historial de pagos</h3>
+    <p class="text-white-50 mb-0">Membresías, descuentos y paquetes de clases registrados</p>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="get" class="mb-3" role="search">
+            <label for="buscar-historial" class="visually-hidden">Buscar pagos por nombre</label>
+            <input id="buscar-historial" type="search" name="search"
+                   class="form-control" placeholder="Buscar por nombre..."
+                   value="{{ search }}">
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">Concepto</th>
+                        <th scope="col">Teléfono</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Vencimiento</th>
+                        <th scope="col">Fecha de pago</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for c in clientes %}
+                    <tr>
+                        <td class="fw-semibold">{{ c.nombre_completo }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ c.servicio if c.tipo_concepto == 'servicio' else (c.clase or 'Clase') }}</div>
+                            {% if c.tipo_pago == 'visitas' %}
+                                <div class="small text-muted">
+                                    Paquete de clases
+                                    {% if c.visitas_totales is not none %}
+                                        · Saldo: {{ c.visitas_restantes or 0 }} / {{ c.visitas_totales }}
+                                        {{ 'visita' if c.visitas_totales == 1 else 'visitas' }}
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="small text-muted">Membresía · {{ c.tipo_pago|capitalize }}</div>
+                            {% endif %}
+                            <div class="small text-muted mt-1">
+                                ${{ "%.2f"|format(c.monto_base) }}
+                                {% if c.descuento and c.descuento > 0 %}
+                                    − ${{ "%.2f"|format(c.descuento) }} ({{ c.descuento_pct }}%)
+                                {% endif %}
+                                → <strong>${{ "%.2f"|format(c.monto_final) }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ c.telefono or '—' }}</td>
+                        <td>
+                            {% if c.tipo_pago == 'visitas' %}
+                                {% if (c.visitas_restantes or 0) > 0 %}
+                                    <span class="badge bg-primary">Disponible</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Agotado</span>
+                                {% endif %}
+                            {% elif c.vigente %}
+                                <span class="badge bg-success">Vigente</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Vencido</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if c.tipo_pago == 'visitas' %}
+                                <span class="text-muted">Por visitas</span>
+                            {% elif not c.fecha_corte %}
+                                <span class="text-muted">—</span>
+                            {% else %}
+                                {% set dias = (c.fecha_corte - today).days %}
+                                {% if dias < 0 %}
+                                    <span class="text-danger fw-semibold">{{ c.fecha_corte.strftime('%d/%m/%Y') }}</span>
+                                {% elif dias == 0 %}
+                                    <span class="text-warning-emphasis fw-semibold">{{ c.fecha_corte.strftime('%d/%m/%Y') }} <small>(hoy)</small></span>
+                                {% elif dias <= 3 %}
+                                    <span class="text-warning-emphasis fw-semibold">{{ c.fecha_corte.strftime('%d/%m/%Y') }} <small>(en {{ dias }} {{ 'día' if dias == 1 else 'días' }})</small></span>
+                                {% else %}
+                                    <span class="text-success">{{ c.fecha_corte.strftime('%d/%m/%Y') }}</span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>{{ c.fecha_pago.strftime('%d/%m/%Y') if c.fecha_pago else '—' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-muted text-center py-4">
+                            {% if search %}No encontramos pagos para ese nombre.{% else %}Todavía no hay pagos registrados.{% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include "components/pagination.html" %}
+    </div>
+</div>
+{% endblock %}

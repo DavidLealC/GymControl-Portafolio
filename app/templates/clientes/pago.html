@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="mb-4">
+    <h3 class="mb-1">Registrar pago</h3>
+    <p class="text-white-50 mb-0">Cliente: {{ cliente.nombre_completo }}</p>
+</div>
+
+<form method="post" class="card shadow-sm p-4">
+    <input type="hidden" name="_csrf_token" value="{{ request.session.get('_csrf_token', '') }}">
+
+    <!-- Elegir si es servicio o clase -->
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Concepto</label>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="tipo_pago_objeto" value="servicio" id="radio_servicio" checked>
+            <label class="form-check-label" for="radio_servicio">Servicio</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="tipo_pago_objeto" value="clase" id="radio_clase">
+            <label class="form-check-label" for="radio_clase">Clase</label>
+        </div>
+    </div>
+
+    <!-- Selección de servicio -->
+    <div class="mb-3" id="div_servicio">
+        <label class="form-label">Servicio o membresía</label>
+        <select name="id_servicio" class="form-select">
+            {% for s in servicios %}
+                <option value="{{ s.id_servicio }}">{{ s.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Selección de clase -->
+    <div class="mb-3" id="div_clase" style="display:none;">
+        <label class="form-label">Clase</label>
+        <select name="id_clase" class="form-select">
+            {% for c in clases %}
+                <option value="{{ c.id_clase }}">{{ c.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+	<div class="mb-3" id="div_visitas" style="display:none;">
+	    <label class="form-label">Número de visitas del paquete</label>
+	    <input
+	        type="number"
+	        name="visitas_totales"
+	        min="1"
+	        class="form-control"
+	        value="10">
+	</div>
+	
+    <!-- Tipo de pago (día, semana, etc.) -->
+    <div class="mb-3" id="div_frecuencia">
+        <label class="form-label">Frecuencia</label>
+        <select name="tipo_pago" id="tipo_pago" class="form-select" required>
+            <option value="dia">Día</option>
+            <option value="semana">Semana</option>
+            <option value="mes">Mes</option>
+            <option value="bimestre">Bimestre</option>
+            <option value="trimestre">Trimestre</option>
+            <option value="cuatrimestre">Cuatrimestre</option>
+            <option value="anio">Año</option>
+            <option value="visitas" hidden>Visitas</option>   	
+        </select>
+    </div>
+
+    <!-- Fechas -->
+    <div class="row" id="div_fechas">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Fecha inicio</label>
+            <input type="date" name="fecha_inicio" id="fecha_inicio"
+                   class="form-control" value="{{ hoy }}" required>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Fecha corte</label>
+            <input type="date" id="fecha_corte" class="form-control" readonly>
+        </div>
+    </div>
+
+    <!-- Monto y descuento -->
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Monto base</label>
+            <input type="number" step="0.01" name="monto_base" id="monto_base" class="form-control" required>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Descuento</label>
+            <select name="id_descuento" id="id_descuento" class="form-select">
+                <option value="" data-porcentaje="0">Sin descuento</option>
+                {% for d in descuentos %}
+                    <option value="{{ d.id_descuento }}" data-porcentaje="{{ d.porcentaje }}">
+                        {{ d.nombre }} ({{ d.porcentaje }}%)
+                    </option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="descuento" id="descuento" value="0">
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Monto final</label>
+            <input type="number" step="0.01" id="monto_final" class="form-control" readonly>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-end gap-2 mt-3">
+        <a href="/clientes/{{ cliente.id_cliente }}" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check-lg" aria-hidden="true"></i> Registrar pago
+        </button>
+    </div>
+</form>
+
+<script>
+/* =========================
+   PREVIEW SOLO VISUAL
+   (Backend calcula real)
+========================= */
+
+function formatearFechaLocal(fecha) {
+    const y = fecha.getFullYear();
+    const m = String(fecha.getMonth() + 1).padStart(2, "0");
+    const d = String(fecha.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+
+function calcularFechaCorte() {
+    const tipo = document.getElementById("tipo_pago").value;
+    const inicioStr = document.getElementById("fecha_inicio").value;
+
+    if (!inicioStr) return;
+
+    const corte = new Date(inicioStr + "T00:00:00");
+
+    const meses = {
+        mes: 1,
+        bimestre: 2,
+        trimestre: 3,
+        cuatrimestre: 4,
+        anio: 12
+    };
+
+    if (tipo === "dia") corte.setDate(corte.getDate() + 1);
+    else if (tipo === "semana") corte.setDate(corte.getDate() + 7);
+    else if (meses[tipo]) {
+        // Igual que relativedelta(months=n): conservar el día si el mes de destino lo permite.
+        const diaOriginal = corte.getDate();
+        corte.setDate(1);
+        corte.setMonth(corte.getMonth() + meses[tipo]);
+        const ultimoDia = new Date(corte.getFullYear(), corte.getMonth() + 1, 0).getDate();
+        corte.setDate(Math.min(diaOriginal, ultimoDia));
+    }
+
+    document.getElementById("fecha_corte").value = formatearFechaLocal(corte);
+}
+
+/* =========================
+   MONTO
+========================= */
+
+function calcularMonto() {
+    const base = parseFloat(document.getElementById("monto_base").value || 0);
+    const select = document.getElementById("id_descuento");
+    const porcentaje = parseFloat(select.options[select.selectedIndex].dataset.porcentaje || 0);
+
+    const montoDescuento = base * (porcentaje / 100);
+    const montoFinal = base - montoDescuento;
+
+    document.getElementById("descuento").value = montoDescuento.toFixed(2);
+    document.getElementById("monto_final").value = montoFinal.toFixed(2);
+}
+
+/* =========================
+   Mostrar servicio/clase
+========================= */
+function actualizarSeleccion() {
+
+    const tipo =
+      document.querySelector(
+      'input[name="tipo_pago_objeto"]:checked'
+      ).value;
+
+    const esClase = tipo === "clase";
+
+    document.getElementById("div_servicio").style.display =
+      esClase ? "none" : "";
+
+    document.getElementById("div_clase").style.display =
+      esClase ? "" : "none";
+
+    document.getElementById("div_visitas").style.display =
+      esClase ? "" : "none";
+
+    document.getElementById("div_frecuencia").style.display =
+      esClase ? "none" : "";
+
+    document.getElementById("div_fechas").style.display =
+      esClase ? "none" : "";
+
+    // quitar required si es visitas
+    document.getElementById("tipo_pago").required = !esClase;
+    document.getElementById("fecha_inicio").required = !esClase;
+
+    if (esClase){
+        document.getElementById("tipo_pago").value = "visitas";
+    }
+}
+
+/* =========================
+   Eventos
+========================= */
+
+document.getElementById("tipo_pago").addEventListener("change", calcularFechaCorte);
+document.getElementById("fecha_inicio").addEventListener("change", calcularFechaCorte);
+document.getElementById("monto_base").addEventListener("input", calcularMonto);
+document.getElementById("id_descuento").addEventListener("change", calcularMonto);
+
+document.querySelectorAll('input[name="tipo_pago_objeto"]').forEach(radio =>
+    radio.addEventListener("change", actualizarSeleccion)
+);
+
+calcularFechaCorte();
+calcularMonto();
+actualizarSeleccion();
+</script>
+
+{% endblock %}
+

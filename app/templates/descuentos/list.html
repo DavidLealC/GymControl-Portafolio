@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Descuentos</h3>
+    <a href="/descuentos/nuevo" class="btn btn-primary">
+        + Nuevo descuento
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Porcentaje</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for d in descuentos %}
+                <tr>
+                    <td>{{ d.nombre }}</td>
+                    <td>{{ d.porcentaje }}%</td>
+                    <td>
+                        {% if d.activo %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+
+                        <a href="/descuentos/{{ d.id_descuento }}/editar"
+                        class="btn btn-sm btn-outline-dark">
+                            Editar
+                        </a>
+
+                        <form action="/descuentos/eliminar/{{ d.id_descuento }}"
+                              method="post"
+                              class="d-inline"
+                              onsubmit="return confirm('¿Seguro que deseas eliminar este descuento?');">
+    <input type="hidden" name="_csrf_token" value="{{ request.session.get('_csrf_token', '') }}">
+                            <button class="btn btn-sm btn-outline-danger">
+                                Eliminar
+                            </button>
+                        </form>
+
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% if not descuentos %}
+            <div class="text-center text-muted py-4">
+                No hay descuentos registrados.
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

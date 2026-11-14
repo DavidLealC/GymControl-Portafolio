@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Detalle del coach</h3>
+
+    <a href="/coaches/{{ coach.id_coach }}/editar"
+       class="btn btn-outline-dark">
+        Editar
+    </a>
+</div>
+
+<a href="/coaches/" class="btn btn-outline-secondary mb-4">
+    ← Volver a coaches
+</a>
+
+<!-- DATOS DEL COACH -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">
+        Información del coach
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-bordered mb-0">
+            <tbody>
+                <tr>
+                    <th class="table-light" style="width: 30%">Nombre</th>
+                    <td>{{ coach.nombre }}</td>
+                </tr>
+                <tr>
+                    <th class="table-light">Teléfono</th>
+                    <td>
+                        {% if coach.telefono %}
+                            {{ coach.telefono }}
+                        {% else %}
+                            <span class="text-muted">Sin registro</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="table-light">Estado</th>
+                    <td>
+                        {% if coach.activo %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactivo</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CLASES DEL COACH -->
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+        <span>Clases que imparte</span>
+
+        <a href="/coaches/{{ coach.id_coach }}/clases"
+           class="btn btn-sm btn-primary">
+            Asignar clase
+        </a>
+    </div>
+
+    <div class="card-body p-0">
+        {% if clases %}
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Clase</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in clases %}
+                <tr>
+                    <td>{{ c.nombre }}</td>
+
+                    <td class="text-end">
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="p-3">
+                <p class="text-muted mb-0">
+                    Este coach no tiene clases asignadas.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

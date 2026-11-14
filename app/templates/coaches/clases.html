@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Clases del coach</h3>
+</div>
+
+<a href="/coaches/{{ coach.id_coach }}"
+   class="btn btn-outline-secondary mb-4">
+    ← Volver al coach
+</a>
+
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold">
+        {{ coach.nombre }}
+    </div>
+
+    <form method="post" class="card-body">
+    <input type="hidden" name="_csrf_token" value="{{ request.session.get('_csrf_token', '') }}">
+
+        {% if clases %}
+            {% for c in clases %}
+            <div class="form-check mb-2">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="clases"
+                    value="{{ c.id_clase }}"
+                    id="clase{{ c.id_clase }}"
+                    {% if c.asignada %}checked{% endif %}
+                >
+                <label class="form-check-label" for="clase{{ c.id_clase }}">
+                    <strong>{{ c.nombre }}</strong>
+                    {% if c.descripcion %}
+                        <span class="text-muted">
+                            — {{ c.descripcion }}
+                        </span>
+                    {% endif %}
+                </label>
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary mt-3">
+                Guardar cambios
+            </button>
+        {% else %}
+            <p class="text-muted mb-0">
+                No hay clases registradas.
+            </p>
+        {% endif %}
+
+    </form>
+</div>
+
+{% endblock %}

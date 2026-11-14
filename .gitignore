@@ -1,0 +1,36 @@
+.env
+venv/
+crearadmin.py
+# Python
+__pycache__/
+*.pyc
+*.pyo
+# DB
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Evitar publicar información operativa o configuraciones de producción
+.env.*
+!.env.example
+respaldo*.sql
+*.backup
+*.dump
+*.log
+*.pem
+*.key
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+*.msi
+*.exe
+app/routes/venv/
+.venv/

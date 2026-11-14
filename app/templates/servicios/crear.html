@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Nuevo Servicio</h3>
+    <a href="/servicios" class="btn btn-outline-secondary">Volver</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <form method="post" action="/servicios/crear">
+    <input type="hidden" name="_csrf_token" value="{{ request.session.get('_csrf_token', '') }}">
+
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <input type="text" name="nombre" class="form-control" placeholder="Nombre del servicio" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <textarea name="descripcion" class="form-control" placeholder="Descripción del servicio"></textarea>
+            </div>
+
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" name="incluye_pesas" id="incluye_pesas">
+                <label class="form-check-label" for="incluye_pesas">Incluye pesas</label>
+            </div>
+
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" name="incluye_clase_diaria" id="incluye_clase_diaria">
+                <label class="form-check-label" for="incluye_clase_diaria">Incluye clase diaria</label>
+            </div>
+
+            <div class="mt-3">
+                <button class="btn btn-dark">Crear Servicio</button>
+                <a href="/servicios" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

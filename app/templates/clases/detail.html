@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a href="/clases/" class="btn btn-outline-secondary">
+        ← Volver a clases
+    </a>
+
+    <a href="/clases/{{ clase.id_clase }}/editar"
+       class="btn btn-outline-primary">
+        Editar clase
+    </a>
+</div>
+
+<h3 class="mb-3">Clase: {{ clase.nombre }}</h3>
+
+<p class="text-muted">{{ clase.descripcion }}</p>
+
+<hr>
+
+<h5>Horarios</h5>
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Día</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for h in horarios %}
+        <tr>
+            <td>{{ h.dia_semana }}</td>
+            <td>{{ h.hora_inicio }}</td>
+            <td>{{ h.hora_fin }}</td>
+            <td>
+                <form method="post"
+                      action="/clases/horarios/{{ h.id_horario }}/eliminar"
+                      style="display:inline;">
+    <input type="hidden" name="_csrf_token" value="{{ request.session.get('_csrf_token', '') }}">
+                    <button type="submit"
+                            class="btn btn-sm btn-danger"
+                            onclick="return confirm('¿Eliminar este horario?')">
+                        ✕
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4" class="text-muted">No hay horarios registrados</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<h5>Agregar horario</h5>
+
+<form method="post" action="/clases/{{ clase.id_clase }}/horarios">
+    <input type="hidden" name="_csrf_token" value="{{ request.session.get('_csrf_token', '') }}">
+    <div class="row g-2">
+        <div class="col-md-4">
+            <select name="dia_semana" class="form-select" required>
+                <option value="">Día</option>
+                <option>Lunes</option>
+                <option>Martes</option>
+                <option>Miércoles</option>
+                <option>Jueves</option>
+                <option>Viernes</option>
+                <option>Sábado</option>
+                <option>Domingo</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <input type="time" name="hora_inicio" class="form-control" required>
+        </div>
+
+        <div class="col-md-3">
+            <input type="time" name="hora_fin" class="form-control" required>
+        </div>
+
+        <div class="col-md-2">
+            <button class="btn btn-dark w-100">Agregar</button>
+        </div>
+    </div>
+</form>
+
+{% endblock %}
